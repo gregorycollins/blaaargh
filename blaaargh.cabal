@@ -1,0 +1,75 @@
+Name:                Blaaargh
+Version:             0.1
+Synopsis:            A simple content-management system for Happstack,
+                     suitable for small-to-medium-sized websites 
+License:             BSD3
+License-file:        LICENSE
+Author:              Gregory Collins
+
+Stability:           Experimental
+Category:            Web
+Build-type:          Simple
+
+Cabal-Version:       >= 1.6
+
+Library
+    hs-source-dirs:
+        src
+    exposed-modules: Blaaargh.Exception,
+                     Blaaargh.Post,
+                     Blaaargh.Types,
+                     Blaaargh.Handlers,
+                     Blaaargh.Templates,
+                     Blaaargh.Time,
+                     Blaaargh.Util.ExcludeList
+                     Blaaargh.Util.Templates,
+                     Blaaargh
+
+    ghc-options: -Wall -funbox-strict-fields -O2 -fvia-C -optc-O3 -funfolding-use-threshold=16
+    Build-Depends: base >= 4 && <5,
+                   HStringTemplate,
+                   HTTP,
+                   bytestring,
+                   ConfigFile,
+                   containers,
+                   directory,
+                   feed,
+                   filepath,
+                   happstack-server >= 0.3,
+                   hslogger,
+                   mtl,
+                   old-locale,
+                   old-time,
+                   pandoc,
+                   split,
+                   time,
+                   unix,
+                   xml
+
+
+
+Executable blaaargh-test
+    Main-is: Test/TestBlaaargh.hs
+    hs-source-dirs: src
+
+    ghc-options: -Wall -funbox-strict-fields -fglasgow-exts -O2 -fvia-C -optc-O3 -threaded
+    ghc-prof-options: -Wall -funbox-strict-fields -fglasgow-exts -O2 -fvia-C -optc-O3 -threaded -prof -auto-all
+    Build-Depends: base >= 4 && <5,
+                   HStringTemplate,
+                   HStringTemplateHelpers,
+                   HTTP,
+                   bytestring,
+                   ConfigFile,
+                   containers,
+                   directory,
+                   feed,
+                   filepath,
+                   happstack-server >= 0.3,
+                   mtl,
+                   old-locale,
+                   old-time,
+                   pandoc,
+                   split,
+                   time,
+                   unix,
+                   xml
