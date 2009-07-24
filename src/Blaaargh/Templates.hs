@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Blaaargh.Templates
-  ( findTemplateForPost
+  ( findFourOhFourTemplate
+  , findTemplateForPost
   , findTemplateForDirectory )
 where
 
@@ -14,11 +15,21 @@ import           Data.ByteString.Char8 (ByteString)
 import           Data.List
 import           Data.Maybe
 import           Data.Monoid
+import           Happstack.Server
 import           Prelude hiding (catch)
 import           Text.StringTemplate
 ------------------------------------------------------------------------------
 import           Blaaargh.Types
 import           Blaaargh.Util.Templates
+
+
+------------------------------------------------------------------------------
+findFourOhFourTemplate :: ServerPartT BlaaarghMonad (Maybe Template)
+findFourOhFourTemplate = do
+    templates <- lift $ liftM blaaarghTemplates get
+    pathList  <- askRq >>= return . map B.pack . rqPaths
+
+    lift $ cascadingTemplateFind pathList "404"
 
 
 ------------------------------------------------------------------------------
@@ -31,25 +42,21 @@ findTemplateForPost :: [ByteString]   -- ^ path to the post, relative
                     -> BlaaarghMonad (Maybe (Template))
 findTemplateForPost pathList = do
     xformTmpl <- liftM blaaarghExtraTmpl get
+    templates <- liftM blaaarghTemplates get
     assert (not $ null pathList) (return ())
 
-    mbT <- findFirstMatchingTemplate templatesToSearch
+    let ft  = First $ lookupTmpl templates firstTmpl
+    st     <- cascadingTemplateFind pathList "post" >>= return . First
+    let mbT = getFirst (ft `mappend` st)
+
     return $ xformTmpl `fmap` mbT
 
   where
     postName = last pathList
 
-    -- if post is at "foo/bar/baz.md", then containingDirs contains
-    -- [["foo","bar"], ["foo"], []]
-    containingDirs    = tail . reverse . inits $ pathList
-
     -- search for a template specific to this post first, then walk up
     -- the directory structure looking for a template named "post"
-
-    firstTmpl = (listToPath $ head containingDirs, postName)
-
-    templatesToSearch = firstTmpl :
-                          map (\d -> (listToPath d, "post")) containingDirs
+    firstTmpl = (listToPath $ init pathList, postName)
 
 
 ------------------------------------------------------------------------------
@@ -95,6 +102,20 @@ findFirstMatchingTemplate templatesToSearch = do
       map (First . lookupTmpl templates) templatesToSearch
 
 
+------------------------------------------------------------------------------
+cascadingTemplateFind :: [ByteString]
+                      -> ByteString
+                      -> BlaaarghMonad (Maybe (StringTemplate ByteString))
+cascadingTemplateFind directories templateName = do
+    templates <- liftM blaaarghTemplates get
+    assert (not $ null directories) (return ())
 
+    findFirstMatchingTemplate templatesToSearch
 
+  where
+    -- if requested "foo/bar/baz", then containingDirs contains
+    -- [["foo","bar"], ["foo"], []]
+    containingDirs    = tail . reverse . inits $ directories
 
+    templatesToSearch = map (\d -> (listToPath d, templateName))
+                            containingDirs

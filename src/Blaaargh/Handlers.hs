@@ -11,6 +11,7 @@ import           Data.List
 import           Data.Map (Map)
 import qualified Data.Map as Map
 import           Data.Maybe
+import           Data.Monoid
 import           Happstack.Server
 import           Happstack.Server.HTTP.FileServe
 import           Happstack.Server.Parts
@@ -44,7 +45,7 @@ serveBlaaargh = do
     cm    <- lift get >>= return . blaaarghPostMap
     paths <- askRq >>= return . map B.pack . rqPaths
 
-    serve [] paths cm
+    serve [] paths cm `mappend` fourohfour
 
   where
     --------------------------------------------------------------------------
@@ -101,6 +102,21 @@ serveBlaaargh = do
                        (ContentDirectory _ mp) -> serve (soFar ++ [d]) rest mp
                        _                       -> mzero)
               mbD
+
+
+
+------------------------------------------------------------------------------
+fourohfour :: BlaaarghHandler
+fourohfour = do
+    state  <- lift get
+    mbTmpl <- findFourOhFourTemplate
+    tmpl   <- maybe mzero return mbTmpl
+
+    let title = getTextContent . Atom.feedTitle . blaaarghFeedInfo $ state
+
+    let tmpl'  = setAttribute "pageTitle" title tmpl
+
+    return $ toResponse $ HtmlResponse $ render tmpl'
 
 
 ------------------------------------------------------------------------------
