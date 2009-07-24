@@ -1,12 +1,23 @@
-{-# LANGUAGE DeriveDataTypeable   #-}
 {-# LANGUAGE OverloadedStrings    #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 
-module Blaaargh.Types where
+module Blaaargh.Types 
+  ( module Blaaargh.Exception
+  , Post(..)
+  , getPostTime
+  , ContentMap
+  , ContentItem(..)
+  , BlaaarghState(..)
+  , BlaaarghMonad
+  , BlaaarghHandler
+  , liftB
+  , runBlaaarghHandler
+  , addExtraTemplateArguments
+  )
+where
 
 ------------------------------------------------------------------------------
-import           Control.Exception
 import           Control.Monad.State
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -15,7 +26,6 @@ import qualified Data.Map as Map
 import           Data.Map (Map)
 import           Data.Maybe
 import           Data.Time.LocalTime
-import           Data.Typeable
 import           Happstack.Server
 import qualified Text.Atom.Feed as Atom
 import qualified Text.Atom.Feed.Export as Atom

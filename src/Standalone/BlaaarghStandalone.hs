@@ -6,15 +6,12 @@ import           Prelude hiding (catch)
 import           Control.Exception
 import           Happstack.Server
 import           System.Environment
-import           System.FilePath
 import           System.Log.Handler.Simple
 import           System.Log.Logger
 import           System.IO
 
 
 import           Blaaargh
-import           Blaaargh.Handlers
-import           Blaaargh.Types
 
 
 getBlaaarghDir :: IO FilePath
@@ -24,8 +21,8 @@ getBlaaarghDir = getEnv "BLAAARGH_DIR" `catch`
 
 main :: IO ()
 main = do
+    -- FIXME: parse arguments, usage statement
     bs <- getBlaaarghDir >>= initBlaaargh
-
 
     loghandler <- streamHandler stdout DEBUG
 

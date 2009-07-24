@@ -13,7 +13,6 @@ import           Control.Monad.State
 import qualified Data.ByteString.Char8 as B
 import           Data.ByteString.Char8 (ByteString)
 import           Data.List
-import           Data.Maybe
 import           Data.Monoid
 import           Happstack.Server
 import           Prelude hiding (catch)
@@ -26,7 +25,6 @@ import           Blaaargh.Util.Templates
 ------------------------------------------------------------------------------
 findFourOhFourTemplate :: ServerPartT BlaaarghMonad (Maybe Template)
 findFourOhFourTemplate = do
-    templates <- lift $ liftM blaaarghTemplates get
     pathList  <- askRq >>= return . map B.pack . rqPaths
 
     lift $ cascadingTemplateFind pathList "404"
@@ -107,7 +105,6 @@ cascadingTemplateFind :: [ByteString]
                       -> ByteString
                       -> BlaaarghMonad (Maybe (StringTemplate ByteString))
 cascadingTemplateFind directories templateName = do
-    templates <- liftM blaaarghTemplates get
     assert (not $ null directories) (return ())
 
     findFirstMatchingTemplate templatesToSearch

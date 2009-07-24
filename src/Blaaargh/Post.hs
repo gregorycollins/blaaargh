@@ -90,11 +90,6 @@ parsePersons = map mkPerson . endBy ","
 
 
 
-mkPost :: String -> String -> TimeZone -> UTCTime -> Post
-mkPost pId title tz tm =
-    Post $ nullEntry pId (TextString title) (formatAtomTime tz tm)
-
-
 parseHeaders :: String -> (Either Cfg.CPError Cfg.ConfigParser)
 parseHeaders = Cfg.readstring Cfg.emptyCP
 
@@ -210,8 +205,8 @@ alphabeticalPosts sl m = sortBy cmp $ collectPosts sl m
     cmp (Post a) (Post b) = entryId a `compare` entryId b
 
 
-buildContentMap :: String -> String -> FilePath -> IO ContentMap
-buildContentMap siteURL baseURL basedir = build [] "."
+buildContentMap :: String -> FilePath -> IO ContentMap
+buildContentMap baseURL basedir = build [] "."
   where
     build :: [String] -> FilePath -> IO ContentMap
     build prefixes path = do

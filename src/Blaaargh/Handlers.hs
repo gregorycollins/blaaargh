@@ -2,13 +2,11 @@
 
 module Blaaargh.Handlers where
 
-import           Control.Monad (mzero)
 import           Control.Monad.State
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.ByteString.Char8 (ByteString)
 import           Data.List
-import           Data.Map (Map)
 import qualified Data.Map as Map
 import           Data.Maybe
 import           Data.Monoid
@@ -79,7 +77,7 @@ serveBlaaargh = do
                   (\f -> case f of
                            (ContentStatic fp)     -> serveStatic fp
                            (ContentPost post)     -> lift $ servePost (soFar ++ [a]) post
-                           (ContentDirectory p d) -> serveIndex (soFar ++ [a]) d)
+                           (ContentDirectory _ d) -> serveIndex (soFar ++ [a]) d)
                   (Map.lookup a content)
 
 
@@ -192,8 +190,8 @@ serveIndex soFar content = do
     let mbPost = Map.lookup "index" content
 
     let baseURL  = B.pack $ blaaarghBaseURL state
-    let path     = B.concat $ intersperse "/" $ soFar ++ ["feed.xml"]
-    let feedURL  = B.unpack $ B.concat [baseURL, "/", path]
+    let fdPath     = B.concat $ intersperse "/" $ soFar ++ ["feed.xml"]
+    let feedURL  = B.unpack $ B.concat [baseURL, "/", fdPath]
 
 
     let title = concat
@@ -247,9 +245,9 @@ serveFeed soFar content = do
       else do
         let siteURL  = B.pack siteURL'
         let baseURL  = B.pack $ blaaarghBaseURL state
-        let path     = B.concat $ intersperse "/" $ soFar ++ ["feed.xml"]
+        let fdPath     = B.concat $ intersperse "/" $ soFar ++ ["feed.xml"]
         let feedURL  = B.unpack $ B.concat
-                                $ [siteURL, baseURL, "/", path]
+                                $ [siteURL, baseURL, "/", fdPath]
         let baseFeed = blaaarghFeedInfo state
 
         let feed     = baseFeed {

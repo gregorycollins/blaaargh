@@ -1,27 +1,31 @@
 module Blaaargh
+  ( initBlaaargh
+  , serveBlaaargh
+  , runBlaaarghHandler
+  , addExtraTemplateArguments
+  , BlaaarghException
+  , BlaaarghMonad
+  , BlaaarghHandler
+  , BlaaarghState
+  )
 where
 
 ------------------------------------------------------------------------------
 import           Control.Exception
 import           Control.Monad
 import qualified Data.ByteString.Char8 as B
-import           Data.ByteString.Char8 (ByteString)
 import           Data.Char
 import qualified Data.ConfigFile as Cfg
 import           Data.Either
 import           Data.List
-import           Data.List.Split
 import           System.Directory
 import           System.FilePath
 import qualified Text.Atom.Feed as Atom
 import           Text.Printf
-import           Text.StringTemplate
 
 ------------------------------------------------------------------------------
-import           Blaaargh.Exception
 import           Blaaargh.Handlers
 import           Blaaargh.Post
-import           Blaaargh.Templates
 import           Blaaargh.Types
 import qualified Blaaargh.Util.ExcludeList as EL
 import           Blaaargh.Util.ExcludeList (ExcludeList)
@@ -36,7 +40,7 @@ initBlaaargh path = do
 
     (feed, siteURL, baseURL, excludeList) <- readConfig configFilePath
 
-    cmap      <- buildContentMap siteURL baseURL contentDir
+    cmap      <- buildContentMap baseURL contentDir
     templates <- readTemplateDir templateDir
 
     return BlaaarghState {

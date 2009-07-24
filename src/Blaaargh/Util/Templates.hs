@@ -27,10 +27,10 @@ import           Blaaargh.Exception
 import           Blaaargh.Util.ExcludeList
 
 ------------------------------------------------------------------------------
-data TemplateDirs = TemplateDirs {
-      templateGroup :: TemplateGroup
-    , subGroups     :: Map ByteString TemplateDirs
-}
+data TemplateDirs =
+     TemplateDirs TemplateGroup                  -- ^ top-level template group
+                  (Map ByteString TemplateDirs)  -- ^ template group
+                                                 -- for subdirs
 
 
 instance Show TemplateDirs where
