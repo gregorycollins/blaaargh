@@ -1,9 +1,9 @@
 Name:                Blaaargh
-Version:             0.2
+Version:             0.3
 Synopsis:            A simple content-management system for Happstack,
                      suitable for small-to-medium-sized websites
-License:             BSD3
-License-file:        LICENSE
+License:             GPL
+License-file:        COPYING
 Author:              Gregory Collins
 
 Stability:           Experimental
