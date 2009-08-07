@@ -1,4 +1,4 @@
-module Blaaargh.Time where
+module Blaaargh.Internal.Time where
 
 import           Data.Time.Clock
 import           Data.Time.Format

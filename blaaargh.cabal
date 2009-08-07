@@ -1,7 +1,6 @@
 Name:                Blaaargh
 Version:             0.3
-Synopsis:            A simple content-management system for Happstack,
-                     suitable for small-to-medium-sized websites
+Synopsis:            A simple filesystem-based content management system for Happstack
 License:             GPL
 License-file:        COPYING
 Author:              Gregory Collins
@@ -16,14 +15,14 @@ Library
     hs-source-dirs:
         src
     exposed-modules: Blaaargh
-                   , Blaaargh.Time
-                   , Blaaargh.Exception
-                   , Blaaargh.Util.ExcludeList
-                   , Blaaargh.Util.Templates
-                   , Blaaargh.Types
-                   , Blaaargh.Post
-                   , Blaaargh.Templates
-                   , Blaaargh.Handlers
+    other-modules:   Blaaargh.Internal.Time
+                   , Blaaargh.Internal.Exception
+                   , Blaaargh.Internal.Util.ExcludeList
+                   , Blaaargh.Internal.Util.Templates
+                   , Blaaargh.Internal.Types
+                   , Blaaargh.Internal.Post
+                   , Blaaargh.Internal.Templates
+                   , Blaaargh.Internal.Handlers
 
 
     ghc-options: -Wall -funbox-strict-fields -O2 -fvia-C -optc-O3 -funfolding-use-threshold=16

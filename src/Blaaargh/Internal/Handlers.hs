@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blaaargh.Handlers where
+module Blaaargh.Internal.Handlers ( serveBlaaargh ) where
 
 import           Control.Monad.State
 import qualified Data.ByteString.Char8 as B
@@ -19,10 +19,10 @@ import           Text.Printf
 import           Text.StringTemplate
 
 ------------------------------------------------------------------------------
-import           Blaaargh.Post
-import           Blaaargh.Templates
-import           Blaaargh.Types
-import qualified Blaaargh.Util.ExcludeList as EL
+import           Blaaargh.Internal.Post
+import           Blaaargh.Internal.Templates
+import           Blaaargh.Internal.Types
+import qualified Blaaargh.Internal.Util.ExcludeList as EL
 
 
 ------------------------------------------------------------------------------
@@ -35,6 +35,15 @@ showPath = B.unpack . B.intercalate "/"
 
 
 ------------------------------------------------------------------------------
+
+{-|
+
+The top-level happstack handler. The 'BlaaarghHandler' is a 'ServerPartT' over
+a state monad; you \"run\" this handler by feeding it a BlaaarghState using
+'runBlaaarghHandler'. It handles requests on its base url (defined in the
+@{blaaargh_dir}/config@ file) and serves up content from the content area.
+
+-}
 serveBlaaargh :: BlaaarghHandler
 serveBlaaargh = do
     methodOnly GET
@@ -67,7 +76,7 @@ serveBlaaargh = do
                        (B.unpack a)
 
         if a == "feed.xml" then
-            lift $ serveFeed soFar content
+            serveFeed soFar content
           else
             maybe (do
                     debug $ printf "serveFile: 404: soFar=%s a=%s"
@@ -76,7 +85,7 @@ serveBlaaargh = do
                     mzero)
                   (\f -> case f of
                            (ContentStatic fp)     -> serveStatic fp
-                           (ContentPost post)     -> lift $ servePost (soFar ++ [a]) post
+                           (ContentPost post)     -> servePost (soFar ++ [a]) post
                            (ContentDirectory _ d) -> serveIndex (soFar ++ [a]) d)
                   (Map.lookup a content)
 
@@ -130,10 +139,10 @@ instance ToMessage HtmlResponse where
 
 
 ------------------------------------------------------------------------------
-servePost :: [ByteString] -> Post -> BlaaarghMonad Response
+servePost :: [ByteString] -> Post -> BlaaarghHandler
 servePost soFar post = do
-    state  <- get
-    mbTmpl <- findTemplateForPost soFar
+    state  <- lift get
+    mbTmpl <- lift $ findTemplateForPost soFar
     tmpl   <- maybe mzero return mbTmpl
 
     let title = concat
@@ -229,16 +238,16 @@ addSiteURL siteURL (Post p) =
 
 
 ------------------------------------------------------------------------------
-serveFeed :: [ByteString] -> ContentMap -> BlaaarghMonad Response
+serveFeed :: [ByteString] -> ContentMap -> BlaaarghHandler
 serveFeed soFar content = do
-    state <- get
+    state <- lift get
 
     let excludes' =  blaaarghFeedExcludes state
     let excludes  =  foldl' (flip EL.descend) excludes' soFar
 
     let siteURL'  =  blaaarghSiteURL state
     let posts     =  map (addSiteURL siteURL') $ recentPosts excludes content 5
-    hasTemplate   <- liftM isJust $ findTemplateForDirectory soFar
+    hasTemplate   <- lift $ liftM isJust $ findTemplateForDirectory soFar
 
     if null posts || not hasTemplate
       then mzero

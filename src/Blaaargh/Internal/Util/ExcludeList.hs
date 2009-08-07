@@ -1,4 +1,4 @@
-module Blaaargh.Util.ExcludeList
+module Blaaargh.Internal.Util.ExcludeList
   ( empty
   , fromPathList
   , fromPath

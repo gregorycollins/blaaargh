@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module Blaaargh.Post
+module Blaaargh.Internal.Post
   ( getTimeStamp
   , parsePersons
   , collectPosts
@@ -56,10 +56,10 @@ import qualified Text.Pandoc as Pandoc
 import           Text.Printf
 import           Text.XML.Light
 ------------------------------------------------------------------------
-import           Blaaargh.Time
-import           Blaaargh.Types
-import qualified Blaaargh.Util.ExcludeList as EL
-import           Blaaargh.Util.ExcludeList (ExcludeList)
+import           Blaaargh.Internal.Time
+import           Blaaargh.Internal.Types
+import qualified Blaaargh.Internal.Util.ExcludeList as EL
+import           Blaaargh.Internal.Util.ExcludeList (ExcludeList)
 ------------------------------------------------------------------------
 
 

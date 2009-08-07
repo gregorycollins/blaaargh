@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blaaargh.Util.Templates
-  ( TemplateDirs
+module Blaaargh.Internal.Util.Templates
+  ( TemplateDirectory
   , Template
   , TemplateGroup
   , readTemplateDir
@@ -23,20 +23,28 @@ import           System.FilePath
 import           Text.StringTemplate
 
 ------------------------------------------------------------------------------
-import           Blaaargh.Exception
-import           Blaaargh.Util.ExcludeList
+import           Blaaargh.Internal.Exception
+import           Blaaargh.Internal.Util.ExcludeList
 
 ------------------------------------------------------------------------------
-data TemplateDirs =
-     TemplateDirs TemplateGroup                  -- ^ top-level template group
-                  (Map ByteString TemplateDirs)  -- ^ template group
-                                                 -- for subdirs
+
+{-|
+
+'TemplateDirectory' is a directory structure of 'StringTemplate's. 'Template's
+are indexed by path from a root path \".\", e.g. \"./dir/foo\", and templates
+can invoke other templates (from the same directory or a parent directory) by
+name.
+
+-}
+
+data TemplateDirectory =
+    TemplateDirectory TemplateGroup (Map ByteString TemplateDirectory)
 
 
-instance Show TemplateDirs where
+instance Show TemplateDirectory where
     show x = help 0 x
       where
-        help n (TemplateDirs _ s) =
+        help n (TemplateDirectory _ s) =
             "{\n" ++ concatMap (sone n) assocs
                   ++ "\n"
                   ++ (replicate n '\t')
@@ -50,13 +58,20 @@ instance Show TemplateDirs where
                          (help (n+1) v)
 
 
-
-type TemplateGroup = STGroup B.ByteString
+-- | TemplateGroup is a type alias for a StringTemplate over ByteStrings.
 type Template      = StringTemplate B.ByteString
 
 
+-- | TemplateGroup is a type alias for a STGroup over ByteStrings.
+type TemplateGroup = STGroup B.ByteString
+
+
 ------------------------------------------------------------------------------
-readTemplateDir :: FilePath -> IO TemplateDirs
+
+
+-- | Given a directory on the filesystem, crawl it for ".st" files and
+--   produce a TemplateDirectory.
+readTemplateDir :: FilePath -> IO TemplateDirectory
 readTemplateDir d = do
     mp <- help d
     return $ fixup mp
@@ -82,21 +97,21 @@ readTemplateDir d = do
                            return (B.pack f,t))
                         dirs
 
-        return $ TemplateDirs grp $ Map.fromList subDirs
+        return $ TemplateDirectory grp $ Map.fromList subDirs
 
 
-    addGroup grp (TemplateDirs g sub) =
-        TemplateDirs (addSuperGroup g grp) sub
+    addGroup grp (TemplateDirectory g sub) =
+        TemplateDirectory (addSuperGroup g grp) sub
 
 
-    fixup (TemplateDirs grp sub) =
-        TemplateDirs grp newsub
+    fixup (TemplateDirectory grp sub) =
+        TemplateDirectory grp newsub
       where
         sub'   = fmap (addGroup grp) sub
         newsub = fmap fixup sub'
         
 
-lookupDirgroup :: FilePath -> TemplateDirs -> Maybe TemplateGroup
+lookupDirgroup :: FilePath -> TemplateDirectory -> Maybe TemplateGroup
 lookupDirgroup path t = help pl t
   where
     stripDot []      = []
@@ -105,7 +120,7 @@ lookupDirgroup path t = help pl t
 
     pl = stripDot $ fromPath $ B.pack path
 
-    help []    (TemplateDirs grp _) = Just grp
-    help (a:b) (TemplateDirs _ sub) = do
+    help []    (TemplateDirectory grp _) = Just grp
+    help (a:b) (TemplateDirectory _ sub) = do
       td <- Map.lookup a sub
       help b td

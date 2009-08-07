@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blaaargh.Templates
+module Blaaargh.Internal.Templates
   ( findFourOhFourTemplate
   , findTemplateForPost
   , findTemplateForDirectory )
@@ -18,8 +18,8 @@ import           Happstack.Server
 import           Prelude hiding (catch)
 import           Text.StringTemplate
 ------------------------------------------------------------------------------
-import           Blaaargh.Types
-import           Blaaargh.Util.Templates
+import           Blaaargh.Internal.Types
+import           Blaaargh.Internal.Util.Templates
 
 
 ------------------------------------------------------------------------------
@@ -32,11 +32,11 @@ findFourOhFourTemplate = do
 
 ------------------------------------------------------------------------------
 findTemplateForPost :: [ByteString]   -- ^ path to the post, relative
-                                      -- to the "content/" directory;
+                                      -- to the \"content\/\" directory;
                                       -- if the file is in
-                                      -- "content/foo/bar/baz.md" then
+                                      -- \"@content\/foo\/bar\/baz.md@\" then
                                       -- this list will contain
-                                      -- ["foo", "bar", "baz"]
+                                      -- @["foo", "bar", "baz"]@
                     -> BlaaarghMonad (Maybe (Template))
 findTemplateForPost pathList = do
     xformTmpl <- liftM blaaarghExtraTmpl get
@@ -76,7 +76,7 @@ findTemplateForDirectory pathList = do
 
 ------------------------------------------------------------------------------
 -- | look up whether a particular template exists
-lookupTmpl :: TemplateDirs          -- ^ templates
+lookupTmpl :: TemplateDirectory     -- ^ templates
            -> (String, ByteString)  -- ^ (dir, template), where "dir"
                                     -- starts with "./"
            -> Maybe (StringTemplate ByteString)
@@ -85,7 +85,8 @@ lookupTmpl tmpls (d,t) =
 
 
 ------------------------------------------------------------------------------
--- | Take a path list ["foo","bar","baz"] and turn it into "./foo/bar/baz"
+-- | Take a path list @[\"foo\",\"bar\",\"baz\"]@ and turn it into
+-- @\"./foo/bar/baz\"@
 listToPath :: [ByteString] -> String
 listToPath l = B.unpack . B.concat $ intersperse "/" (".":l)
 
