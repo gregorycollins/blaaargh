@@ -15,7 +15,7 @@ FEATURES:
 * posts\/pages written in markdown format
 
 * pages formatted into HTML by a flexible cascading template system based on
-  HStringTemplate (http://hackage.haskell.org/package/HStringTemplate). Page
+  HStringTemplate (<http://hackage.haskell.org/package/HStringTemplate>). Page
   templates can be overridden on a per-page or per-folder basis.
 
 * directories can be given indices using the templating system. Various views
