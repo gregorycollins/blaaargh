@@ -13,7 +13,6 @@ import           Data.Monoid
 import           Happstack.Server
 import           Happstack.Server.HTTP.FileServe
 import           Happstack.Server.Parts
-import           System.Log.Logger
 import qualified Text.Atom.Feed as Atom
 import           Text.Printf
 import           Text.StringTemplate
@@ -26,16 +25,6 @@ import qualified Blaaargh.Internal.Util.ExcludeList as EL
 
 
 ------------------------------------------------------------------------------
-debug :: (MonadIO m) => String -> m ()
-debug = liftIO . debugM "blaaargh"
-
-
-showPath :: [ByteString] -> String
-showPath = B.unpack . B.intercalate "/"
-
-
-------------------------------------------------------------------------------
-
 {-|
 
 The top-level happstack handler. The 'BlaaarghHandler' is a 'ServerPartT' over
@@ -58,10 +47,6 @@ serveBlaaargh = do
     --------------------------------------------------------------------------
     serve :: [ByteString] -> [ByteString] -> ContentMap -> BlaaarghHandler
     serve soFar paths content = do
-        debug $ printf "serve: soFar=%s paths=%s"
-                       (showPath soFar)
-                       (showPath paths)
-
         case paths of
           []      -> serveIndex soFar content
           (a:[])  -> serveFile soFar a content
@@ -71,18 +56,10 @@ serveBlaaargh = do
     --------------------------------------------------------------------------
     serveFile :: [ByteString] -> ByteString -> ContentMap -> BlaaarghHandler
     serveFile soFar a content = do
-        debug $ printf "serveFile: soFar=%s a=%s"
-                       (showPath soFar)
-                       (B.unpack a)
-
         if a == "feed.xml" then
             serveFeed soFar content
           else
-            maybe (do
-                    debug $ printf "serveFile: 404: soFar=%s a=%s"
-                                   (showPath soFar)
-                                   (B.unpack a)
-                    mzero)
+            maybe mzero
                   (\f -> case f of
                            (ContentStatic fp)     -> serveStatic fp
                            (ContentPost post)     -> servePost (soFar ++ [a]) post
@@ -98,11 +75,6 @@ serveBlaaargh = do
              -> BlaaarghHandler
     serveDir soFar d rest content = do
         let mbD = Map.lookup d content
-
-        debug $ printf "serveDir: 404: soFar=%s d=%s rest=%s"
-                       (showPath soFar)
-                       (B.unpack d)
-                       (showPath rest)
 
         maybe mzero
               (\f -> case f of
@@ -174,9 +146,6 @@ getContentTitle _                      = ""
 ------------------------------------------------------------------------------
 serveIndex :: [ByteString] -> ContentMap -> BlaaarghHandler
 serveIndex soFar content = do
-    debug $ printf "serveIndex: soFar=%s"
-                   (showPath soFar)
-
     state  <- lift get
     mbTmpl <- lift $ findTemplateForDirectory soFar
     tmpl   <- maybe mzero return mbTmpl
