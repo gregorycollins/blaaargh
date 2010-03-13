@@ -40,7 +40,7 @@ import           Blaaargh.Internal.Time
 import           Blaaargh.Internal.Util.ExcludeList
 import           Blaaargh.Internal.Util.Templates
 
-
+import qualified Data.ByteString.UTF8 as UTF8
 
 -- to make things super-easy on us, we'll define our internal post
 -- format to be the same as our Atom feed.
@@ -56,19 +56,20 @@ getPostTime (Post p) = parseAtomTime $ fromMaybe upd pub
 
 
 instance ToSElem Atom.EntryContent where
-    toSElem (Atom.TextContent s)  = toSElem s
-    toSElem (Atom.HTMLContent s)  = toSElem s
+    toSElem (Atom.TextContent s)  = toSElem $ UTF8.fromString s
+    toSElem (Atom.HTMLContent s)  = toSElem $ UTF8.fromString s
     toSElem _                     = toSElem (""::String)
 
 
 instance ToSElem Atom.TextContent where
-    toSElem (Atom.TextString s) = toSElem s
-    toSElem (Atom.HTMLString s) = toSElem s
+    toSElem (Atom.TextString s) = toSElem $ UTF8.fromString s
+    toSElem (Atom.HTMLString s) = toSElem $ UTF8.fromString s
     toSElem _ = toSElem (""::String)
 
 
 instance ToSElem Atom.Person where
-    toSElem (Atom.Person name _ email _) = toSElem $ name ++ em
+    toSElem (Atom.Person name _ email _) =
+        toSElem $ UTF8.fromString $ name ++ em
       where
         em = maybe "" (\e -> " <" ++ e ++ ">") email
 
